@@ -1,0 +1,53 @@
+{
+  "name": "@twitterapi-io/mcp-server",
+  "version": "0.1.0",
+  "description": "Official Model Context Protocol (MCP) server for twitterapi.io — Twitter / X data API. Search tweets, get user profiles, followers, replies, trends — all via Claude Desktop, Cursor, or any MCP-compatible client.",
+  "license": "MIT",
+  "author": "twitterapi.io",
+  "homepage": "https://twitterapi.io",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kaitoInfra/twitterapi-io-mcp-server.git"
+  },
+  "bugs": {
+    "url": "https://github.com/kaitoInfra/twitterapi-io-mcp-server/issues"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "twitter",
+    "twitter-api",
+    "x-api",
+    "claude",
+    "cursor",
+    "ai-tools",
+    "twitterapi"
+  ],
+  "type": "module",
+  "main": "build/index.js",
+  "bin": {
+    "twitterapi-io-mcp-server": "build/index.js"
+  },
+  "files": [
+    "build",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc && chmod +x build/index.js",
+    "dev": "tsc --watch",
+    "inspect": "npx @modelcontextprotocol/inspector node build/index.js",
+    "prepublishOnly": "npm run build"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "zod": "^3.23.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.4.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
