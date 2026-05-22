@@ -1,6 +1,6 @@
 # twitterapi.io MCP Server
 
-[![npm version](https://img.shields.io/npm/v/@twitterapi-io/mcp-server.svg)](https://www.npmjs.com/package/@twitterapi-io/mcp-server)
+[![npm version](https://img.shields.io/npm/v/@kaitoinfra/twitterapi-io-mcp-server.svg)](https://www.npmjs.com/package/@kaitoinfra/twitterapi-io-mcp-server)
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![MCP Spec 2025-11-25](https://img.shields.io/badge/MCP-2025--11--25-green)](https://modelcontextprotocol.io/specification)
 
@@ -44,7 +44,7 @@ Edit `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS) o
   "mcpServers": {
     "twitterapi-io": {
       "command": "npx",
-      "args": ["-y", "@twitterapi-io/mcp-server"],
+      "args": ["-y", "@kaitoinfra/twitterapi-io-mcp-server"],
       "env": {
         "TWITTERAPI_IO_API_KEY": "your_key_here"
       }
@@ -64,7 +64,7 @@ Open Settings → MCP → Add new MCP Server:
   "mcpServers": {
     "twitterapi-io": {
       "command": "npx",
-      "args": ["-y", "@twitterapi-io/mcp-server"],
+      "args": ["-y", "@kaitoinfra/twitterapi-io-mcp-server"],
       "env": {
         "TWITTERAPI_IO_API_KEY": "your_key_here"
       }
@@ -80,7 +80,7 @@ Add to your MCP servers config — same shape as Claude Desktop / Cursor.
 #### Claude Code
 
 ```bash
-claude mcp add twitterapi-io npx -- -y @twitterapi-io/mcp-server -e TWITTERAPI_IO_API_KEY=your_key_here
+claude mcp add twitterapi-io npx -- -y @kaitoinfra/twitterapi-io-mcp-server -e TWITTERAPI_IO_API_KEY=your_key_here
 ```
 
 ### 3. Use it
@@ -111,10 +111,10 @@ Tools that return lists (followers, replies, search results, etc.) return a `nex
 
 ## Tools — full spec
 
-Each tool's input schema is exposed via MCP's `tools/list` and follows JSON Schema. Run `npx @twitterapi-io/mcp-server` with `mcp-inspector` to browse interactively:
+Each tool's input schema is exposed via MCP's `tools/list` and follows JSON Schema. Run `npx @kaitoinfra/twitterapi-io-mcp-server` with `mcp-inspector` to browse interactively:
 
 ```bash
-npx @modelcontextprotocol/inspector npx -y @twitterapi-io/mcp-server
+npx @modelcontextprotocol/inspector npx -y @kaitoinfra/twitterapi-io-mcp-server
 ```
 
 ## What's NOT included
