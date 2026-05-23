@@ -1,0 +1,27 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.kaitoInfra/twitterapi-io-mcp-server",
+  "description": "Official Model Context Protocol (MCP) server for twitterapi.io — Twitter/X data access (search tweets, users, followers, replies, trends) via Claude Desktop, Cursor, VS Code Copilot, or any MCP-compatible client.",
+  "repository": {
+    "url": "https://github.com/kaitoInfra/twitterapi-io-mcp-server",
+    "source": "github"
+  },
+  "version": "0.1.1",
+  "packages": [
+    {
+      "registryType": "npm",
+      "identifier": "@kaitoinfra/twitterapi-io-mcp-server",
+      "version": "0.1.1",
+      "transport": { "type": "stdio" },
+      "environmentVariables": [
+        {
+          "name": "TWITTERAPI_IO_API_KEY",
+          "description": "Your twitterapi.io API key — get from https://twitterapi.io dashboard",
+          "isRequired": true,
+          "format": "string",
+          "isSecret": true
+        }
+      ]
+    }
+  ]
+}

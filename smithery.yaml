@@ -1,0 +1,19 @@
+startCommand:
+  type: stdio
+  configSchema:
+    type: object
+    required:
+      - twitterApiIoApiKey
+    properties:
+      twitterApiIoApiKey:
+        type: string
+        title: TwitterAPI.io API Key
+        description: "Get from https://twitterapi.io dashboard"
+        format: password
+  commandFunction:
+    |-
+    (config) => ({
+      command: 'npx',
+      args: ['-y', '@kaitoinfra/twitterapi-io-mcp-server'],
+      env: { TWITTERAPI_IO_API_KEY: config.twitterApiIoApiKey }
+    })

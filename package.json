@@ -1,6 +1,7 @@
 {
   "name": "@kaitoinfra/twitterapi-io-mcp-server",
-  "version": "0.1.0",
+  "version": "0.1.1",
+  "mcpName": "io.github.kaitoInfra/twitterapi-io-mcp-server",
   "description": "Official Model Context Protocol (MCP) server for twitterapi.io — Twitter / X data API. Search tweets, get user profiles, followers, replies, trends — all via Claude Desktop, Cursor, or any MCP-compatible client.",
   "license": "MIT",
   "author": "twitterapi.io",
