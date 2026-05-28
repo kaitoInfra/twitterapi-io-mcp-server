@@ -6,12 +6,12 @@
     "url": "https://github.com/kaitoInfra/twitterapi-io-mcp-server",
     "source": "github"
   },
-  "version": "0.1.3",
+  "version": "0.2.0",
   "packages": [
     {
       "registryType": "npm",
-      "identifier": "@kaitoinfra/twitterapi-io-mcp-server",
-      "version": "0.1.2",
+      "identifier": "@twitterapi_io/mcp-server",
+      "version": "0.2.0",
       "transport": { "type": "stdio" },
       "environmentVariables": [
         {
