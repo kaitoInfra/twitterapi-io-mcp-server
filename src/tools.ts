@@ -11,6 +11,23 @@
  */
 import { z } from "zod";
 import { twitterApiGet } from "./twitterapi-client.js";
+import { compactResponse } from "./transformer.js";
+
+/**
+ * Wrap twitterApiGet with LLM-friendly transformer.
+ * Strips deeply nested fields (full author profile per tweet, extendedEntities,
+ * retweeted_tweet embedding) and flattens {data: {tweets}} → {tweets}.
+ * Reduces a 20-tweet response from ~120 KB → ~3 KB so Claude.ai can inline
+ * the result instead of stashing to /mnt/user-data/.
+ * Pagination signals (has_next_page, next_cursor) are preserved.
+ */
+async function twitterApiGetCompact(
+  path: string,
+  input: Record<string, unknown>,
+): Promise<unknown> {
+  const raw = await twitterApiGet(path, input);
+  return compactResponse(raw);
+}
 
 export interface McpTool {
   name: string;
@@ -228,83 +245,83 @@ export const TOOLS: McpTool[] = [
       "Search Twitter/X for tweets matching a query. Supports the full Twitter advanced search syntax (from:, to:, since:, until:, lang:, filter:, has:, -, OR, etc). Returns ~20 tweets per page in reverse chronological order ('Latest') or by engagement ('Top'). Use this for keyword research, monitoring mentions of a brand/topic, finding tweets in a date range, or any open-ended tweet discovery.",
     inputSchema: searchTweetsSchema,
     call: async (input) =>
-      twitterApiGet("/twitter/tweet/advanced_search", input),
+      twitterApiGetCompact("/twitter/tweet/advanced_search", input),
   },
   {
     name: "get_user_info",
     description:
       "Fetch basic profile info for a Twitter/X user by their screen name (handle). Returns user ID, display name, bio, follower/following counts, verified status, profile picture, banner, location, website, and account creation date. Use this as the starting point for any user analysis.",
     inputSchema: getUserInfoSchema,
-    call: async (input) => twitterApiGet("/twitter/user/info", input),
+    call: async (input) => twitterApiGetCompact("/twitter/user/info", input),
   },
   {
     name: "get_user_about",
     description:
       "Fetch the extended 'about' / profile page data for a Twitter/X user by screen name. Returns extra profile metadata beyond what get_user_info gives (when available). Use get_user_info first; only call this if you need additional about-page fields.",
     inputSchema: getUserAboutSchema,
-    call: async (input) => twitterApiGet("/twitter/user_about", input),
+    call: async (input) => twitterApiGetCompact("/twitter/user_about", input),
   },
   {
     name: "get_user_followers",
     description:
       "Fetch followers of a Twitter/X user in reverse chronological order (newest first), each with full profile metadata (name, bio, follower count, verified status, etc.). Paginates via cursor. Use this to analyze who follows an account, build follower audiences, or sample for competitive analysis. For large accounts use pagination; you will not get all followers in one call.",
     inputSchema: getUserFollowersSchema,
-    call: async (input) => twitterApiGet("/twitter/user/followers", input),
+    call: async (input) => twitterApiGetCompact("/twitter/user/followers", input),
   },
   {
     name: "get_user_followings",
     description:
       "Fetch the accounts a Twitter/X user follows, with full profile metadata. Paginates via cursor. Use this to map a user's interest graph (who they follow signals what they care about).",
     inputSchema: getUserFollowingsSchema,
-    call: async (input) => twitterApiGet("/twitter/user/followings", input),
+    call: async (input) => twitterApiGetCompact("/twitter/user/followings", input),
   },
   {
     name: "get_user_last_tweets",
     description:
       "Fetch the most recent tweets posted by a Twitter/X user, sorted by created_at descending. Provide EITHER userName (screen name, no @) OR userId (numeric). Use userId when known — handles can change. Set includeReplies=true to include the user's reply tweets in addition to top-level tweets. Paginates via cursor.",
     inputSchema: getUserLastTweetsSchema,
-    call: async (input) => twitterApiGet("/twitter/user/last_tweets", input),
+    call: async (input) => twitterApiGetCompact("/twitter/user/last_tweets", input),
   },
   {
     name: "get_user_mentions",
     description:
       "Fetch tweets that mention a specific Twitter/X user (i.e. tweets containing @userName). Useful for brand monitoring, sentiment tracking on a public figure, or finding conversations involving an account. Supports time-bound queries via sinceTime/untilTime (Unix seconds). Paginates via cursor.",
     inputSchema: getUserMentionsSchema,
-    call: async (input) => twitterApiGet("/twitter/user/mentions", input),
+    call: async (input) => twitterApiGetCompact("/twitter/user/mentions", input),
   },
   {
     name: "get_tweets_by_ids",
     description:
       "Batch-fetch full tweet objects by their numeric tweet IDs. Pass a comma-separated string of up to 100 IDs. Use this when you already have specific tweet IDs (e.g., from a search result, a URL, or a webhook event) and need the full tweet data — author, text, engagement counts, media, etc.",
     inputSchema: getTweetsByIdsSchema,
-    call: async (input) => twitterApiGet("/twitter/tweets", input),
+    call: async (input) => twitterApiGetCompact("/twitter/tweets", input),
   },
   {
     name: "get_tweet_replies",
     description:
       "Fetch replies to a specific tweet. Pass the numeric tweetId of the root tweet; returns top-level replies (about 20 per page) with full tweet objects. Use this for thread analysis, sentiment on a viral post, or building reply trees.",
     inputSchema: getTweetRepliesSchema,
-    call: async (input) => twitterApiGet("/twitter/tweet/replies/v2", input),
+    call: async (input) => twitterApiGetCompact("/twitter/tweet/replies/v2", input),
   },
   {
     name: "get_tweet_quotes",
     description:
       "Fetch quote-tweets (tweets that quote the given tweetId). Useful for finding commentary on a tweet, measuring reach beyond direct replies. Supports time bounds (sinceTime/untilTime, Unix seconds). Paginates via cursor (~20 per page).",
     inputSchema: getTweetQuotesSchema,
-    call: async (input) => twitterApiGet("/twitter/tweet/quotes", input),
+    call: async (input) => twitterApiGetCompact("/twitter/tweet/quotes", input),
   },
   {
     name: "get_tweet_retweeters",
     description:
       "Fetch users who retweeted a specific tweet (the simple 'retweet' action, not quote-tweets — for those use get_tweet_quotes). Returns user profiles with metadata. Paginates via cursor (~100 per page).",
     inputSchema: getTweetRetweetersSchema,
-    call: async (input) => twitterApiGet("/twitter/tweet/retweeters", input),
+    call: async (input) => twitterApiGetCompact("/twitter/tweet/retweeters", input),
   },
   {
     name: "get_trends",
     description:
       "Fetch current trending topics/hashtags for a location. Pass a Yahoo Where-On-Earth ID (woeid). Common: 1=Worldwide, 23424977=USA, 23424975=UK, 23424856=Japan, 23424848=India, 23424881=South Korea. Use woeid=1 for global trends if you don't know a specific location.",
     inputSchema: getTrendsSchema,
-    call: async (input) => twitterApiGet("/twitter/trends", input),
+    call: async (input) => twitterApiGetCompact("/twitter/trends", input),
   },
 ];
