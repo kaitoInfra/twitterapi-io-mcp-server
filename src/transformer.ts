@@ -76,6 +76,36 @@ function isObj(x: unknown): x is Record<string, unknown> {
   return typeof x === "object" && x !== null && !Array.isArray(x);
 }
 
+/**
+ * Recursively drop null / "" / [] / {} fields.
+ * Used as fallback polish when response shape is unknown (e.g. get_user_info
+ * returns raw user object directly under `data`, no user-collection wrapper).
+ * Reduces noise like `affiliatesHighlightedLabel: {}` / `pinnedTweetIds: []` /
+ * `verifiedType: null` / `coverPicture: ""` that LLMs don't need.
+ * Returns undefined for fully-empty inputs; caller decides fallback.
+ */
+function dropEmpty(x: unknown): unknown {
+  if (x === null || x === undefined || x === "") return undefined;
+  if (Array.isArray(x)) {
+    if (x.length === 0) return undefined;
+    const cleaned = x.map(dropEmpty).filter((v) => v !== undefined);
+    return cleaned.length === 0 ? undefined : cleaned;
+  }
+  if (typeof x === "object") {
+    const out: Record<string, unknown> = {};
+    let hasKey = false;
+    for (const [k, v] of Object.entries(x)) {
+      const cleaned = dropEmpty(v);
+      if (cleaned !== undefined) {
+        out[k] = cleaned;
+        hasKey = true;
+      }
+    }
+    return hasKey ? out : undefined;
+  }
+  return x;
+}
+
 function num(x: unknown): number | undefined {
   if (typeof x === "number") return x;
   if (typeof x === "string" && /^\d+$/.test(x)) return Number(x);
@@ -277,6 +307,19 @@ export function compactResponse(raw: unknown): unknown {
     const u = compactUser(payload.userInfo);
     if (u) out.user = u;
   }
+  // Polish (2026-05-31): `data` field itself is the user object (no `data.user` wrapper)
+  // — backend /twitter/user/info returns {status, code, msg, data: {id, userName, ...}}.
+  // Detect: payload has userName/screen_name + no recognized collection → treat as user.
+  if (
+    !out.user &&
+    !out.tweets &&
+    !out.users &&
+    !out.trends &&
+    (isObj(raw.data) && (str((raw.data as Record<string, unknown>).userName) || str((raw.data as Record<string, unknown>).screen_name)))
+  ) {
+    const u = compactUser(raw.data);
+    if (u) out.user = u;
+  }
 
   // trends
   const trends = compactArray(payload.trends, compactTrend);
@@ -285,10 +328,11 @@ export function compactResponse(raw: unknown): unknown {
   // merge pagination signals
   Object.assign(out, pagination);
 
-  // unknown structure → fallback to raw (don't accidentally drop data)
+  // unknown structure → fallback to raw, but dropEmpty first to remove
+  // null / "" / [] / {} noise so LLM still sees a cleaner version
   if (Object.keys(out).length === 0) {
-    // pure pagination has no payload → still fallback to raw so LLM sees what backend sent
-    return raw;
+    const cleaned = dropEmpty(raw);
+    return cleaned ?? raw;
   }
 
   return out;
