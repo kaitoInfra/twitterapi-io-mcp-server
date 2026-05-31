@@ -242,7 +242,7 @@ export const TOOLS: McpTool[] = [
   {
     name: "search_tweets",
     description:
-      "Search Twitter/X for tweets matching a query. Supports the full Twitter advanced search syntax (from:, to:, since:, until:, lang:, filter:, has:, -, OR, etc). Returns ~20 tweets per page in reverse chronological order ('Latest') or by engagement ('Top'). Use this for keyword research, monitoring mentions of a brand/topic, finding tweets in a date range, or any open-ended tweet discovery.",
+      "Search Twitter/X for tweets matching a query. Supports the full Twitter advanced search syntax (from:, to:, since:, until:, lang:, filter:, has:, -, OR, etc). Returns ~20 tweets per page in reverse chronological order ('Latest') or by engagement ('Top'). Use this for keyword research, monitoring mentions of a brand/topic, finding tweets in a date range, or any open-ended tweet discovery.\n\n🎯 Use this (NOT get_user_last_tweets) when user asks about a SPECIFIC TIME RANGE:\n  • 'tweets from January 2026' → query='from:elonmusk since:2026-01-01 until:2026-02-01'\n  • 'tweets between X and Y' → 'from:USER since:X until:Y'\n  • 'tweets last week / last month' → translate to since:/until: dates\n  • 'tweets containing keyword X by user Y' → 'from:Y X'\n\nDate format: YYYY-MM-DD (UTC midnight). 'until:' is exclusive (until:2026-02-01 = up to Jan 31).",
     inputSchema: searchTweetsSchema,
     call: async (input) =>
       twitterApiGetCompact("/twitter/tweet/advanced_search", input),
@@ -278,7 +278,7 @@ export const TOOLS: McpTool[] = [
   {
     name: "get_user_last_tweets",
     description:
-      "Fetch the most recent tweets posted by a Twitter/X user, sorted by created_at descending. Provide EITHER userName (screen name, no @) OR userId (numeric). Use userId when known — handles can change. Set includeReplies=true to include the user's reply tweets in addition to top-level tweets. Paginates via cursor.",
+      "Fetch the MOST RECENT tweets posted by a Twitter/X user, sorted by created_at descending (newest first). Provide EITHER userName (screen name, no @) OR userId (numeric). Use userId when known — handles can change. Set includeReplies=true to include the user's reply tweets in addition to top-level tweets. Paginates via cursor (~20 per page).\n\n⚠️ DO NOT use this for date-range queries (e.g. 'tweets from January 2026', 'tweets last week', 'tweets between X and Y'). For specific dates / older tweets, use **search_tweets** with query like 'from:elonmusk since:2026-01-01 until:2026-02-01' — that hits Twitter advanced search directly instead of paginating dozens of pages backwards from now.",
     inputSchema: getUserLastTweetsSchema,
     call: async (input) => twitterApiGetCompact("/twitter/user/last_tweets", input),
   },
